@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+set -e
+
+
+case $1 in
+up)
+    /usr/bin/amixer -D pulse sset Master 2%+ 
+    ;;
+down)
+    /usr/bin/amixer -D pulse sset Master 2%-
+    ;;
+mute)
+    /usr/bin/amixer -D pulse sset Master 1+ toggle
+    ;;
+*)
+	echo "You must specify an option."
+	;;
+esac
