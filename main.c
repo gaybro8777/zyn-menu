@@ -26,6 +26,7 @@ typedef struct
 	int must_prompt_exit;
 
 	guint arrow_held;
+	guint begin_slide; //timeout before starting slide
 	int must_slide_choices;
 	direction slide_direction;
 
@@ -122,6 +123,20 @@ int slide(gpointer data)
 	return TRUE;
 }
 
+int begin_slide(gpointer data)
+{
+	app_widgets *widgets = (app_widgets *)data;
+
+	widgets->must_slide_choices = TRUE;
+
+	if (!widgets->arrow_held)
+		widgets->arrow_held = g_timeout_add(120, slide, widgets);
+	
+	widgets->begin_slide = FALSE;
+
+	return FALSE;
+}
+
 void down_press(GtkWidget *widget, GdkEvent *event, app_widgets *widgets)
 {
 	if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
@@ -130,19 +145,20 @@ void down_press(GtkWidget *widget, GdkEvent *event, app_widgets *widgets)
 	}
 
 	move(DOWN, widgets);
-
-	widgets->must_slide_choices = TRUE;
 	widgets->slide_direction = DOWN;
 
-	if (!widgets->arrow_held)
-		widgets->arrow_held = g_timeout_add(120, slide, widgets);
+	widgets->begin_slide = g_timeout_add(200, begin_slide, widgets);
 }
 
 void down_release(GtkWidget *widget, GdkEvent *event, app_widgets *widgets)
 {
 	widgets->must_slide_choices = FALSE;
 
-	g_source_remove(widgets->arrow_held);
+	if(widgets->arrow_held)
+		g_source_remove(widgets->arrow_held);
+	if(widgets->begin_slide)
+		g_source_remove(widgets->begin_slide);
+
 	widgets->arrow_held = FALSE;
 }
 
@@ -155,18 +171,20 @@ void up_press(GtkWidget *widget, GdkEvent *event, app_widgets *widgets)
 
 	move(UP, widgets);
 
-	widgets->must_slide_choices = TRUE;
 	widgets->slide_direction = UP;
 
-	if (!widgets->arrow_held)
-		widgets->arrow_held = g_timeout_add(120, slide, widgets);
+	widgets->begin_slide = g_timeout_add(200, begin_slide, widgets);
 }
 
 void up_release(GtkWidget *widget, GdkEvent *event, app_widgets *widgets)
 {
 	widgets->must_slide_choices = FALSE;
 
-	g_source_remove(widgets->arrow_held);
+	if(widgets->arrow_held)
+		g_source_remove(widgets->arrow_held);
+	if(widgets->begin_slide)
+		g_source_remove(widgets->begin_slide);
+
 	widgets->arrow_held = FALSE;
 }
 
