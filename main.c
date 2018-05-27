@@ -190,12 +190,16 @@ void enter_clicked(GtkWidget *widget, app_widgets *widgets)
 		if (gtk_tree_selection_get_selected(tsel_songs, &tm_songs, &iter))
 		{
 			gchararray preset_path;
+			gchararray preset_name;
+
 			tm = gtk_tree_view_get_model(widgets->w_presets_tree_view);
 
+			gtk_tree_model_get(tm, &iter, 0, &preset_name, -1);
 			gtk_tree_model_get(tm, &iter, 1, &preset_path, -1);
 
+			gtk_label_set_text(widgets->w_current_preset, preset_name);
 			load_preset(preset_path);
-
+			
 			return;
 		}
 	}
